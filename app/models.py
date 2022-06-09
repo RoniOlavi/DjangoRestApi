@@ -9,7 +9,7 @@ class Supplier(models.Model):
     country = models.CharField(max_length = 50, default="Maa")
 
     class Meta:
-        ordering = ['companyname']
+        ordering = ['id']
 
 
 class Product(models.Model):
