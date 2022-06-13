@@ -1,138 +1,95 @@
-from app.models import Product, Supplier, User
-from app.serializers import ProductSerializer, SupplierSerializer, UserSerializer
-from django.http import Http404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from app.models import Product, Supplier, Category, Customer, Employee, Order
+from app.serializers import ProductSerializer, SupplierSerializer, UserSerializer, CategorySerializer, CustomerSerializer, EmployeeSerializer, OrderSerializer
+from rest_framework import generics
+from django.contrib.auth.models import User
+from rest_framework import permissions
+from . permissions import IsOwnerOrReadOnly
 
-class SuppliersList(APIView):
-    """
-    List all suppliers, or create a new supplier.
-    """
-    def get(self, request, format=None):
-        suppliers = Supplier.objects.all()
-        serializer = SupplierSerializer(suppliers, many=True)
-        return Response(serializer.data)
+class SuppliersList(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset =Supplier.objects.all()
+    serializer_class = SupplierSerializer
 
-    def post(self, request, format=None):
-        serializer = SupplierSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
-class SupplierDetail(APIView):
-    """
-    Retrieve, update or delete a supplier instance.
-    """
-    def get_object(self, id):
-        try:
-            return Supplier.objects.get(id =id)
-        except Supplier.DoesNotExist:
-            raise Http404
+class SupplierDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    queryset = Supplier.objects.all()
+    serializer_class = SupplierSerializer
 
-    def get(self, request, id, format=None):
-        supplier = self.get_object(id)
-        serializer = SupplierSerializer(supplier)
-        return Response(serializer.data)
 
-    def put(self, request, id, format=None):
-        supplier = self.get_object(id)
-        serializer = SupplierSerializer(supplier, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ProductList(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
-    def delete(self, request, id, format=None):
-        supplier = self.get_object(id)
-        supplier.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
-class ProductList(APIView):
-    """
-    List all Products, or create a new product.
-    """
-    def get(self, request, format=None):
-        product = Product.objects.all()
-        serializer = ProductSerializer(product, many=True)
-        return Response(serializer.data)
+class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
-    def post(self, request, format=None):
-        serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ProductDetail(APIView):
-    """
-    Retrieve, update or delete a product instance.
-    """
-    def get_object(self, id):
-        try:
-            return Product.objects.get(id = id)
-        except Product.DoesNotExist:
-            raise Http404
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
-    def get(self, request, id, format=None):
-        product = self.get_object(id)
-        serializer = ProductSerializer(product)
-        return Response(serializer.data)
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
-    def put(self, request, id, format=None):
-        product = self.get_object(id)
-        serializer = ProductSerializer(product, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, id, format=None):
-        product = self.get_object(id)
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+class CategoryList(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
-class UserList(APIView):
-    """
-    List all Users, or create a new user.
-    """
-    def get(self, request, format=None):
-        user = User.objects.all()
-        serializer = UserSerializer(user, many=True)
-        return Response(serializer.data)
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
-    def post(self, request, format=None):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
-class UserDetail(APIView):
-    """
-    Retrieve, update or delete a user instance.
-    """
-    def get_object(self, id):
-        try:
-            return User.objects.get(id = id)
-        except User.DoesNotExist:
-            raise Http404
 
-    def get(self, request, id, format=None):
-        user = self.get_object(id)
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+class CustomerList(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
 
-    def put(self, request, id, format=None):
-        user = self.get_object(id)
-        serializer = UserSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
-    def delete(self, request, id, format=None):
-        user = self.get_object(id)
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+class CustomerDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
+
+
+class EmployeeList(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+class EmployeeDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+
+
+class OrderList(generics.ListCreateAPIView):
+    #permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+class OrderDetail(generics.RetrieveUpdateDestroyAPIView):
+    #permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
